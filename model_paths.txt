@@ -1,0 +1,2 @@
+YOLOv8n:results/yolov8n_brain_tumor_detection_v1/yolov8n_brain_tumor_detection_v1.pt
+YOLOv11n:results/yolov11n_brain_tumor_detection_v1/yolov11n_brain_tumor_detection_v1.pt
