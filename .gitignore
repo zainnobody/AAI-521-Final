@@ -1,2 +1,7 @@
 data/BrainTumorDetectionYolov9
 data/TumorDetectionYolov8
+
+local-tests/
+
+# all the runs are already in their respective directors. See results/model-info/detect-dir
+runs/
