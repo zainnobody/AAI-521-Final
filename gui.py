@@ -1,7 +1,7 @@
 import os
 import cv2
 import tkinter as tk
-from tkinter import filedialog, Text, messagebox, ttk
+from tkinter import filedialog, Text, messagebox, ttk, Scrollbar
 from PIL import Image, ImageTk
 import numpy as np
 import torch
@@ -12,10 +12,10 @@ class ImageAnalyzerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Tumor Detection Model")
-        self.root.geometry("600x600")
+        self.root.geometry("800x800")
 
         # Intro disclaimer in the main window
-        self.intro_label = tk.Label(self.root, text="This is a demo version of automated tumor classification, created as a computer vision project by Zain Ali, Halladay Kinsey, and Liam Richardson. By clicking accept, you acknowledge that this is for educational purposes only.", wraplength=500, justify="left")
+        self.intro_label = tk.Label(self.root, text="This is a demo version of automated tumor classification, created as a computer vision project by Zain Ali, Halladay Kinsey, and Liam Richardson. By clicking accept, you acknowledge that this is for educational purposes only.", wraplength=700, justify="left")
         self.intro_label.pack(pady=20)
 
         # Accept and reject buttons
@@ -30,6 +30,7 @@ class ImageAnalyzerApp:
 
         # File path to save comments
         self.selected_file_path = None
+        self.selected_volume_path = None
 
     def initialize_main_window(self):
         # Enable main interface components
@@ -41,9 +42,12 @@ class ImageAnalyzerApp:
         # Load YOLO model - set up model path selection
         self.load_model_selection()
 
-        # Widgets for selecting file
+        # Widgets for selecting file or volume
         self.select_button = tk.Button(self.root, text="Select Image", command=self.select_image)
-        self.select_button.pack(pady=20)
+        self.select_button.pack(pady=10)
+
+        self.select_volume_button = tk.Button(self.root, text="Select Volume", command=self.select_volume)
+        self.select_volume_button.pack(pady=10)
 
         # Canvas to display image
         self.image_canvas = tk.Label(self.root)
@@ -138,6 +142,62 @@ class ImageAnalyzerApp:
             else:
                 messagebox.showerror("Error", "Unable to read the selected image.")
 
+    def select_volume(self):
+        # Ensure the interface is enabled
+        if not self.interface_enabled:
+            messagebox.showwarning("Warning", "Please accept the disclaimer first.")
+            return
+
+        # Open file dialog to select volume (folder of images)
+        volume_path = filedialog.askdirectory(initialdir=os.getcwd(), title="Select Volume Folder")
+        if volume_path:
+            self.selected_volume_path = volume_path
+            self.volume_images = [os.path.join(volume_path, f) for f in os.listdir(volume_path) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.tiff'))]
+            self.current_volume_index = 0
+
+            if len(self.volume_images) > 0:
+                self.display_volume_image()
+                self.analyze_volume_image()
+            else:
+                messagebox.showerror("Error", "No images found in the selected folder.")
+
+    def display_volume_image(self):
+        # Load current image from volume
+        image_path = self.volume_images[self.current_volume_index]
+        image = cv2.imread(image_path)
+        if image is not None:
+            self.display_image(image)
+
+    def analyze_volume_image(self):
+        # Load current image from volume
+        image_path = self.volume_images[self.current_volume_index]
+        image = cv2.imread(image_path)
+        if image is not None:
+            self.analyze_image(image)
+
+        # Add scroll buttons to navigate volume
+        if not hasattr(self, 'next_button'):
+            self.next_button = tk.Button(self.root, text="Next Slice", command=self.next_volume_image)
+            self.next_button.pack(side="right", padx=10, pady=10)
+
+        if not hasattr(self, 'prev_button'):
+            self.prev_button = tk.Button(self.root, text="Previous Slice", command=self.prev_volume_image)
+            self.prev_button.pack(side="left", padx=10, pady=10)
+
+    def next_volume_image(self):
+        # Navigate to the next image in the volume
+        if self.current_volume_index < len(self.volume_images) - 1:
+            self.current_volume_index += 1
+            self.display_volume_image()
+            self.analyze_volume_image()
+
+    def prev_volume_image(self):
+        # Navigate to the previous image in the volume
+        if self.current_volume_index > 0:
+            self.current_volume_index -= 1
+            self.display_volume_image()
+            self.analyze_volume_image()
+
     def display_image(self, image):
         # Convert image to RGB and resize for display
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -162,12 +222,17 @@ class ImageAnalyzerApp:
         # Run inference on the image
         results = self.model.predict(image_tensor, imgsz=640)
 
-        # Check for label 'label0' to determine tumor presence
-        labels = [int(cls) for cls in results[0].boxes.cls.cpu().numpy()]
-        if 0 in labels:
-            self.result_label.config(text="Result: Tumor detected", fg="red")
+        # Print detected labels and confidence scores
+        labels = results[0].boxes.cls.cpu().numpy()
+        confidences = results[0].boxes.conf.cpu().numpy()
+        detected_info = "Detected Labels and Confidence Scores:\n"
+        for label, confidence in zip(labels, confidences):
+            detected_info += f"Label: {int(label)}, Confidence: {confidence:.2f}\n"
+
+        if self.selected_file_path:
+            self.result_label.config(text=detected_info, fg="blue")
         else:
-            self.result_label.config(text="Result: No tumor detected in this image", fg="green")
+            self.result_label.config(text="", fg="blue")
 
         # Render the results (draw boxes and labels)
         results_img = results[0].plot()  # Render the results (draw boxes and labels)
