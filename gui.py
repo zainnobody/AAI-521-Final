@@ -43,15 +43,25 @@ class ImageAnalyzerApp:
         self.load_model_selection()
 
         # Widgets for selecting file or volume
-        self.select_button = tk.Button(self.root, text="Select Image", command=self.select_image)
-        self.select_button.pack(pady=10)
+        self.selection_frame = tk.Frame(self.root)
+        self.selection_frame.pack(pady=10)
 
-        self.select_volume_button = tk.Button(self.root, text="Select Volume", command=self.select_volume)
-        self.select_volume_button.pack(pady=10)
+        self.select_button = tk.Button(self.selection_frame, text="Select Image", command=self.select_image)
+        self.select_button.pack(side="left", padx=10)
 
-        # Canvas to display image
-        self.image_canvas = tk.Label(self.root)
-        self.image_canvas.pack()
+        self.select_volume_button = tk.Button(self.selection_frame, text="Select Volume", command=self.select_volume)
+        self.select_volume_button.pack(side="left", padx=10)
+
+        # Canvas to display image with a frame to hold it and the scrollbar
+        self.image_frame = tk.Frame(self.root)
+        self.image_frame.pack()
+        self.image_canvas = tk.Label(self.image_frame)
+        self.image_canvas.pack(side="left")
+
+        # Scrollbar for scrolling through volume images (vertical)
+        self.scrollbar = tk.Scale(self.image_frame, from_=0, to=0, orient=tk.VERTICAL, command=self.on_scroll)
+        self.scrollbar.pack(side="right", fill="y", padx=10)
+        self.scrollbar.pack_forget()  # Hide initially
 
         # Result Label
         self.result_label = tk.Label(self.root, text="Result: None", font=("Helvetica", 16))
@@ -156,10 +166,19 @@ class ImageAnalyzerApp:
             self.current_volume_index = 0
 
             if len(self.volume_images) > 0:
+                self.scrollbar.config(to=len(self.volume_images) - 1)
+                self.scrollbar.set(self.current_volume_index)
+                self.scrollbar.pack(side="right", fill="y", padx=10)  # Show scrollbar
                 self.display_volume_image()
                 self.analyze_volume_image()
             else:
                 messagebox.showerror("Error", "No images found in the selected folder.")
+
+    def on_scroll(self, value):
+        # Update current index from scrollbar
+        self.current_volume_index = int(value)
+        self.display_volume_image()
+        self.analyze_volume_image()
 
     def display_volume_image(self):
         # Load current image from volume
@@ -174,29 +193,6 @@ class ImageAnalyzerApp:
         image = cv2.imread(image_path)
         if image is not None:
             self.analyze_image(image)
-
-        # Add scroll buttons to navigate volume
-        if not hasattr(self, 'next_button'):
-            self.next_button = tk.Button(self.root, text="Next Slice", command=self.next_volume_image)
-            self.next_button.pack(side="right", padx=10, pady=10)
-
-        if not hasattr(self, 'prev_button'):
-            self.prev_button = tk.Button(self.root, text="Previous Slice", command=self.prev_volume_image)
-            self.prev_button.pack(side="left", padx=10, pady=10)
-
-    def next_volume_image(self):
-        # Navigate to the next image in the volume
-        if self.current_volume_index < len(self.volume_images) - 1:
-            self.current_volume_index += 1
-            self.display_volume_image()
-            self.analyze_volume_image()
-
-    def prev_volume_image(self):
-        # Navigate to the previous image in the volume
-        if self.current_volume_index > 0:
-            self.current_volume_index -= 1
-            self.display_volume_image()
-            self.analyze_volume_image()
 
     def display_image(self, image):
         # Convert image to RGB and resize for display
