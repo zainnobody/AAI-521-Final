@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+from ultralytics import YOLO
 
 class ImageAnalyzerApp:
     def __init__(self, root):
@@ -15,7 +16,7 @@ class ImageAnalyzerApp:
         
         # Load YOLO model
         self.model_path = os.path.join(os.getcwd(),  'results', 'yolov11n_brain_tumor_detection_v1', 'yolov11n_brain_tumor_detection_v1.pt')
-        from ultralytics import YOLO
+ 
         
         # Load YOLO model and weights
         self.model = YOLO(self.model_path)
