@@ -15,9 +15,19 @@ class ImageAnalyzerApp:
         self.root.geometry("800x800")
 
         # Intro disclaimer in the main window
-        self.intro_label = tk.Label(self.root, text="This is a demo version of automated tumor classification, created as a computer vision project by Zain Ali, Halladay Kinsey, and Liam Richardson. By clicking accept, you acknowledge that this is for educational purposes only.", wraplength=700, justify="left")
+        self.intro_label = tk.Label(self.root, text="This is a demo version of automated tumor classification, created as a computer vision project by Zain Ali, Halladay Kinsey, and Liam Richardson. By clicking accept, you acknowledge that this is for educational purposes only. Please consult the performance report below to understand the current capabilities of the model.", wraplength=700, justify="left")
         self.intro_label.pack(pady=20)
 
+        # Metrics disclaimer image
+        self.metrics_image_path = "metrics_disclaimer.jpg"
+        if os.path.exists(self.metrics_image_path):
+            image = Image.open(self.metrics_image_path)
+            image.thumbnail((800, 600), Image.LANCZOS)  # Resize the image while maintaining aspect ratio
+            self.metrics_image = ImageTk.PhotoImage(image)
+            self.metrics_image_label = tk.Label(self.root, image=self.metrics_image)
+            self.metrics_image_label.pack(pady=10)
+        else:
+            messagebox.showwarning("Warning", "metrics_disclaimer.jpg not found in the current directory.")
         # Accept and reject buttons
         self.accept_button = tk.Button(self.root, text="Accept", command=self.initialize_main_window)
         self.accept_button.pack(side="left", padx=20, pady=10)
@@ -37,6 +47,7 @@ class ImageAnalyzerApp:
         self.intro_label.pack_forget()
         self.accept_button.pack_forget()
         self.reject_button.pack_forget()
+        self.metrics_image_label.pack_forget()  # Ensure metrics image is also hidden
         self.interface_enabled = True
 
         # Load YOLO model - set up model path selection
@@ -198,7 +209,7 @@ class ImageAnalyzerApp:
             self.analyze_image(image)
 
     def display_image(self, image):
-        # Convert image to RGB and resize for display
+        # Convert image to RGB and resize for display (displaying at 400 pixels width/height)
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image_pil = Image.fromarray(image_rgb)
         image_pil = image_pil.resize((400, 400), Image.LANCZOS)
@@ -221,24 +232,33 @@ class ImageAnalyzerApp:
         # Run inference on the image
         results = self.model.predict(image_tensor, imgsz=640)
 
+        # Convert the results to an image with bounding boxes and labels drawn
+        results_img = results[0].plot()
+
+        # Draw a small box at the center of each bounding box to indicate the center point
+        for box in results[0].boxes.xywh.cpu().numpy():
+            center_x, center_y, width, height = box[:4]  # Extract center x, y, width, and height from the box
+            box_size = 6  # Size of the small box to draw at the center
+            top_left = (int(center_x - box_size / 2), int(center_y - box_size / 2))
+            bottom_right = (int(center_x + box_size / 2), int(center_y + box_size / 2))
+            cv2.rectangle(results_img, top_left, bottom_right, (0, 0, 255), -1)  # Filled small box in green
+
         # Print detected labels and confidence scores
         labels = results[0].boxes.cls.cpu().numpy()
         confidences = results[0].boxes.conf.cpu().numpy()
         detected_info = "Detected Labels and Confidence Scores:\n"
-        for label, confidence in zip(labels, confidences):
-            detected_info += f"Label: {int(label)}, Confidence: {confidence:.2f}\n"
+        for label, confidence, box in zip(labels, confidences, results[0].boxes.xywh.cpu().numpy()):
+            center_x, center_y = box[:2]  # Extract center x and y from the box
+            detected_info += f"Label: {int(label)}, Confidence: {confidence:.2f} \n"
 
         if self.selected_file_path:
-            self.result_label.config(text=detected_info, fg="blue")
+            self.result_label.config(text=detected_info, fg="black")
         else:
             self.result_label.config(text="", fg="blue")
 
-        # Render the results (draw boxes and labels)
-        results_img = results[0].plot()  # Render the results (draw boxes and labels)
-
         # Convert results image to display
-        result_img = cv2.cvtColor(results_img, cv2.COLOR_BGR2RGB)
-        result_pil = Image.fromarray(result_img)
+        result_img_rgb = cv2.cvtColor(results_img, cv2.COLOR_BGR2RGB)
+        result_pil = Image.fromarray(result_img_rgb)
         result_pil = result_pil.resize((400, 400), Image.LANCZOS)
         result_tk = ImageTk.PhotoImage(result_pil)
         self.image_canvas.configure(image=result_tk)
@@ -274,12 +294,6 @@ class ImageAnalyzerApp:
                 messagebox.showwarning("Warning", "Please enter a comment before saving.")
         else:
             messagebox.showwarning("Warning", "No image selected.")
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = ImageAnalyzerApp(root)
-    root.mainloop()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
