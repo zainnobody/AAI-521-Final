@@ -1,7 +1,12 @@
 data/BrainTumorDetectionYolov9
 data/TumorDetectionYolov8
+data/SAROS-Collection-NIfTI-files-v2_03-70-2024
 
 local-tests/
 
 # all the runs are already in their respective directors. See results/model-info/detect-dir
 runs/
+
+Cancer_Prediction_Runs/
+
+local-test.ipynb
