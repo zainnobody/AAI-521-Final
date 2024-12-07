@@ -11,7 +11,7 @@ from ultralytics import YOLO
 class ImageAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Tumor Detection Model")
+        self.root.title("ScanInsight")
         self.root.geometry("800x800")
 
         # Intro disclaimer in the main window
@@ -265,19 +265,29 @@ class ImageAnalyzerApp:
         self.image_canvas.image = result_tk
 
     def save_comment(self):
-        # Save the comment to a text file with the same name as the image
+        # Save the comment to a text file within the "comments" folder
         if self.selected_file_path:
             comment = self.comment_box.get("1.0", tk.END).strip()
             if comment:
-                comment_file_path = f"{os.path.splitext(self.selected_file_path)[0]}_comments.json"
+                # Create the comments folder path
+                comments_folder = os.path.join(os.getcwd(), "comments")
+                os.makedirs(comments_folder, exist_ok=True)  # Ensure the folder exists
+
+                # Construct the file path within the comments folder
+                file_name = f"{os.path.splitext(os.path.basename(self.selected_file_path))[0]}_comments.json"
+                comment_file_path = os.path.join(comments_folder, file_name)
+
                 import json
                 comments_data = {}
                 if os.path.exists(comment_file_path):
                     with open(comment_file_path, 'r') as file:
                         comments_data = json.load(file)
+
+                # Add the comment to the JSON structure
                 comments_data[os.path.basename(self.selected_file_path)] = comment
                 with open(comment_file_path, 'w') as file:
                     json.dump(comments_data, file, indent=4)
+
                 messagebox.showinfo("Success", f"Comment saved to {comment_file_path}")
             else:
                 messagebox.showwarning("Warning", "Please enter a comment before saving.")
