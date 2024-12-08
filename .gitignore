@@ -1,12 +1,39 @@
-data/BrainTumorDetectionYolov9
-data/TumorDetectionYolov8
-data/SAROS-Collection-NIfTI-files-v2_03-70-2024
+# Ignore all data files and directories
+data/BrainTumorDetectionYolov9/
+data/TumorDetectionYolov8/
+data/SAROS-Collection-NIfTI-files-v2_03-70-2024/
 
+# Ignore all local test directories
 local-tests/
 
-# all the runs are already in their respective directors. See results/model-info/detect-dir
+# Ignore all run directories
 runs/
+results/model-info/detect-dir/
 
+# Ignore cancer prediction run files
 Cancer_Prediction_Runs/
 
+# Ignore Jupyter Notebook files
+*.ipynb
 local-test.ipynb
+ScanInsight-internal.ipynb
+
+# Ignore common files to exclude from Git
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+*.bak
+
+# Ignore Python cache files and directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Ignore environment-related files
+.env
+.venv/
+*.egg-info/
