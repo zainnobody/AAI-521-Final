@@ -6,10 +6,14 @@
 Authors: [Zain Ali](https://github.com/zainnobody), [Hallie Kinsey](https://github.com/halliekinsey), and [Liam Richardson](https://github.com/oliwansd)
 
 
-
 ## Overview
 
 **ScanInsight** is a prototype computer vision tool designed to assist medical professionals in the detection and classification of brain tumors from MRI scans. It leverages advanced YOLO-based object detection models (YOLOv8 and YOLOv11) to identify tumor regions and provide bounding boxes for three distinct tumor classes. The system aims to expedite the diagnostic process and improve accuracy by providing an intuitive interface that allows users—particularly clinical staff—to visualize model predictions.
+
+This project is backed by comprehensive documentation and presentation materials:
+- The **written report** (Team_01_FinalReport.pdf) outlining methodology, results, and conclusions is available [here](https://docs.google.com/document/d/1Wc9xgoGkn9yrXyPmxzmy7rC9WnQwS3EanVA5cSMT1SQ/edit?usp=sharing).
+- This **full code base** (including the final notebook) is hosted on [GitHub](https://github.com/zainnobody/AAI-521-Final). The main analysis and training pipeline can be found in the [ScanInsight.ipynb notebook](https://github.com/zainnobody/AAI-521-Final/blob/main/ScanInsight.ipynb).
+- A **team presentation video** (Team_01_Video_Presentation.mp4) summarizing the project’s approach and findings is available [here](https://drive.google.com/file/d/1AhfSrMsqmyj2uoKmN0KADvaH49bWOU6U/view?usp=sharing), accompanied by [presentation slides](https://docs.google.com/presentation/d/1PwXq2o4taYhlvK3_erAVULdhh83SbpTKYSoR2wHVVuk/edit?usp=sharing).
 
 This repository includes:
 
