@@ -1,5 +1,12 @@
 # ScanInsight: Brain Tumor Detection & Classification
 
+[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+Authors: [Zain Ali](https://github.com/zainnobody), [Hallie Kinsey](https://github.com/halliekinsey), and [Liam Richardson](https://github.com/oliwansd)
+
+
+
 ## Overview
 
 **ScanInsight** is a prototype computer vision tool designed to assist medical professionals in the detection and classification of brain tumors from MRI scans. It leverages advanced YOLO-based object detection models (YOLOv8 and YOLOv11) to identify tumor regions and provide bounding boxes for three distinct tumor classes. The system aims to expedite the diagnostic process and improve accuracy by providing an intuitive interface that allows users—particularly clinical staff—to visualize model predictions.
